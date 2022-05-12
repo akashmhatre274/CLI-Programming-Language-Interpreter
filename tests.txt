@@ -1,0 +1,241 @@
+===============================================
+Testcase 1
+===============================================
+print nil;
+print new {int x = 9;}
+!
+Parse tree:
+[[], [['print', 'nil'], ['print', ['new', ['struct', [['int', 'x', '9']]]]]]]
+Execution:
+nil
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil'}
+}
+h1
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil'}
+  h1 : {'parentns': 'h0', 'x': 9}
+}
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil'}
+  h1 : {'parentns': 'h0', 'x': 9}
+}
+
+===============================================
+Testcase 2
+===============================================
+int y = 9;
+ob z = new {int val = y;
+            proc inc(x): val = (val + x) end;
+           };
+!
+Parse tree:
+[[['int', 'y', '9'], ['ob', 'z', ['new', ['struct', [['int', 'val', ['deref', 'y']], ['proc', 'inc', ['x'], [], [['=', 'val', ['+', ['deref', 'val'], ['deref', 'x']]]]]]]]]], []]
+Execution:
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'y': 9, 'z': 'h1'}
+  h1 : {'parentns': 'h0', 'val': 9, 'inc': 'h2'}
+  h2 : {'type': 'proc', 'params': ['x'], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], ['deref', 'x']]]], 'link': 'h1'}       
+}
+
+===============================================
+Testcase 3
+===============================================
+ob counter  = new {int val = 5;
+                   proc inc(x) : val = (val + x); end;
+                  };
+print counter.val;
+counter.inc(6);
+counter.inc(3);
+!
+Parse tree:
+[[['ob', 'counter', ['new', ['struct', [['int', 'val', '5'], ['proc', 'inc', ['x'], [], [['=', 'val', ['+', ['deref', 'val'], ['deref', 'x']]]]]]]]]], [['print', ['deref', ['dot', 'counter', 'val']]], ['call', ['dot', 'counter', 'inc'], ['6']], ['call', ['dot', 'counter', 'inc'], ['3']]]]
+Execution:
+5
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'counter': 'h1'}
+  h1 : {'parentns': 'h0', 'val': 5, 'inc': 'h2'}
+  h2 : {'type': 'proc', 'params': ['x'], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], ['deref', 'x']]]], 'link': 'h1'}       
+}
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'counter': 'h1'}
+  h1 : {'parentns': 'h0', 'val': 14, 'inc': 'h2'}
+  h2 : {'type': 'proc', 'params': ['x'], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], ['deref', 'x']]]], 'link': 'h1'}       
+  h3 : {'parentns': 'h1', 'x': 6}
+  h4 : {'parentns': 'h1', 'x': 3}
+}
+
+===============================================
+Testcase 4
+===============================================
+int g = 2;
+ob a =  new { int x = (g + 1);
+              ob y = new { int z = (x + g); };
+              int z = 99;
+              proc p(z): int w = z;
+                         print w;
+                         x = (z + y.z) end;
+            };
+a.p(a.y.z)
+!
+Parse tree:
+[[['int', 'g', '2'], ['ob', 'a', ['new', ['struct', [['int', 'x', ['+', ['deref', 'g'], '1']], ['ob', 'y', ['new', ['struct', [['int', 'z', ['+', ['deref', 'x'], ['deref', 'g']]]]]]], ['int', 'z', '99'], ['proc', 'p', ['z'], [['int', 'w', ['deref', 'z']]], [['print', ['deref', 
+'w']], ['=', 'x', ['+', ['deref', 'z'], ['deref', ['dot', 'y', 'z']]]]]]]]]]], [['call', ['dot', 'a', 'p'], [['deref', ['dot', ['dot', 'a', 'y'], 'z']]]]]]
+Execution:
+5
+Activation Stack = ['h0', 'h4']
+heap = {
+  h0 : {'parentns': 'nil', 'g': 2, 'a': 'h1'}
+  h1 : {'parentns': 'h0', 'x': 3, 'y': 'h2', 'z': 99, 'p': 'h3'}
+  h2 : {'parentns': 'h1', 'z': 5}
+  h3 : {'type': 'proc', 'params': ['z'], 'local': [['int', 'w', ['deref', 'z']]], 'body': [['print', ['deref', 'w']], ['=', 'x', ['+', ['deref', 'z'], ['deref', ['dot', 'y', 'z']]]]], 'link': 'h1'}
+  h4 : {'parentns': 'h1', 'z': 5, 'w': 5}
+}
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'g': 2, 'a': 'h1'}
+  h1 : {'parentns': 'h0', 'x': 10, 'y': 'h2', 'z': 99, 'p': 'h3'}
+  h2 : {'parentns': 'h1', 'z': 5}
+  h3 : {'type': 'proc', 'params': ['z'], 'local': [['int', 'w', ['deref', 'z']]], 'body': [['print', ['deref', 'w']], ['=', 'x', ['+', ['deref', 'z'], ['deref', ['dot', 'y', 'z']]]]], 'link': 'h1'}
+  h4 : {'parentns': 'h1', 'z': 5, 'w': 5}
+}
+
+===============================================
+Testcase 5
+===============================================
+class counter : {int val = 1;
+                 proc inc() : val = (val + 1); print val; end;};
+ob c = new counter;
+ob d = new counter;
+c.inc();  d.inc();
+!
+Parse tree:
+[[['class', 'counter', ['struct', [['int', 'val', '1'], ['proc', 'inc', [], [], [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]]]]]], ['ob', 'c', ['new', ['call', 'counter']]], ['ob', 'd', ['new', ['call', 'counter']]]], [['call', ['dot', 'c', 'inc'], []], ['call', ['dot', 'd', 'inc'], []]]]
+Execution:
+2
+Activation Stack = ['h0', 'h6']
+heap = {
+  h0 : {'parentns': 'nil', 'counter': 'h1', 'c': 'h2', 'd': 'h4'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'val', '1'], ['proc', 'inc', [], [], [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]]]]], 'link': 'h0'}
+  h2 : {'parentns': 'h0', 'val': 2, 'inc': 'h3'}
+  h3 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h2'}
+  h4 : {'parentns': 'h0', 'val': 1, 'inc': 'h5'}
+  h5 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h4'}
+  h6 : {'parentns': 'h2'}
+}
+2
+Activation Stack = ['h0', 'h7']
+heap = {
+  h0 : {'parentns': 'nil', 'counter': 'h1', 'c': 'h2', 'd': 'h4'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'val', '1'], ['proc', 'inc', [], [], [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]]]]], 'link': 'h0'}
+  h2 : {'parentns': 'h0', 'val': 2, 'inc': 'h3'}
+  h3 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h2'}
+  h4 : {'parentns': 'h0', 'val': 2, 'inc': 'h5'}
+  h5 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h4'}
+  h6 : {'parentns': 'h2'}
+  h7 : {'parentns': 'h4'}
+}
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'counter': 'h1', 'c': 'h2', 'd': 'h4'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'val', '1'], ['proc', 'inc', [], [], [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]]]]], 'link': 'h0'}
+  h2 : {'parentns': 'h0', 'val': 2, 'inc': 'h3'}
+  h3 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h2'}
+  h4 : {'parentns': 'h0', 'val': 2, 'inc': 'h5'}
+  h5 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], '1']], ['print', ['deref', 'val']]], 'link': 'h4'}
+  h6 : {'parentns': 'h2'}
+  h7 : {'parentns': 'h4'}
+}
+
+===============================================
+Testcase 6
+===============================================
+int x = 0;
+class a : { int y = (x + 1); };
+class b : { ob m = new a;
+            proc inc(howmuch) : m.y = (m.y + howmuch) end;
+          };
+ob y = new b;
+y.inc(4);
+print y.m.y
+!
+Parse tree:
+[[['int', 'x', '0'], ['class', 'a', ['struct', [['int', 'y', ['+', ['deref', 'x'], '1']]]]], ['class', 'b', ['struct', [['ob', 'm', ['new', ['call', 'a']]], ['proc', 'inc', ['howmuch'], [], [['=', ['dot', 'm', 'y'], ['+', ['deref', ['dot', 'm', 'y']], ['deref', 'howmuch']]]]]]]], ['ob', 'y', ['new', ['call', 'b']]]], [['call', ['dot', 'y', 'inc'], ['4']], ['print', ['deref', ['dot', ['dot', 'y', 'm'], 'y']]]]]    
+Execution:
+5
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'x': 0, 'a': 'h1', 'b': 'h2', 'y': 'h3'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'y', ['+', ['deref', 'x'], '1']]]], 'link': 'h0'}
+  h2 : {'type': 'class', 'body': ['struct', [['ob', 'm', ['new', ['call', 'a']]], ['proc', 'inc', ['howmuch'], [], [['=', ['dot', 'm', 'y'], ['+', ['deref', ['dot', 'm', 'y']], ['deref', 'howmuch']]]]]]], 'link': 'h0'}
+  h3 : {'parentns': 'h0', 'm': 'h4', 'inc': 'h5'}
+  h4 : {'parentns': 'h3', 'y': 5}
+  h5 : {'type': 'proc', 'params': ['howmuch'], 'local': [], 'body': [['=', ['dot', 'm', 'y'], ['+', ['deref', ['dot', 'm', 'y']], ['deref', 'howmuch']]]], 'link': 'h3'}
+  h6 : {'parentns': 'h3', 'howmuch': 4}
+}
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'x': 0, 'a': 'h1', 'b': 'h2', 'y': 'h3'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'y', ['+', ['deref', 'x'], '1']]]], 'link': 'h0'}
+  h2 : {'type': 'class', 'body': ['struct', [['ob', 'm', ['new', ['call', 'a']]], ['proc', 'inc', ['howmuch'], [], [['=', ['dot', 'm', 'y'], ['+', ['deref', ['dot', 'm', 'y']], ['deref', 'howmuch']]]]]]], 'link': 'h0'}
+  h3 : {'parentns': 'h0', 'm': 'h4', 'inc': 'h5'}
+  h4 : {'parentns': 'h3', 'y': 5}
+  h5 : {'type': 'proc', 'params': ['howmuch'], 'local': [], 'body': [['=', ['dot', 'm', 'y'], ['+', ['deref', ['dot', 'm', 'y']], ['deref', 'howmuch']]]], 'link': 'h3'}
+  h6 : {'parentns': 'h3', 'howmuch': 4}
+}
+
+===============================================
+Testcase 7
+===============================================
+int initial = 0;
+class Clock : { int increment = 1;
+                class Counter : { int val  = initial;
+                                  proc tick() : val = (val + increment) end;
+                                };
+
+                ob minutes = new Counter;
+                ob seconds = new Counter;
+
+                proc tick(): if (seconds.val - 59) :
+                                  seconds.tick()
+                             else
+                                  seconds.val = 0;
+                                  minutes.tick()   
+                             end
+                end;
+              };
+ob c = new Clock;
+c.tick(); c.tick()
+!
+Parse tree:
+[[['int', 'initial', '0'], ['class', 'Clock', ['struct', [['int', 'increment', '1'], ['class', 'Counter', ['struct', [['int', 'val', ['deref', 'initial']], ['proc', 'tick', [], [], [['=', 'val', ['+', ['deref', 'val'], ['deref', 'increment']]]]]]]], ['ob', 'minutes', ['new', ['call', 'Counter']]], ['ob', 'seconds', ['new', ['call', 'Counter']]], ['proc', 'tick', [], [], [['if', ['-', ['deref', ['dot', 'seconds', 'val']], '59'], [['call', ['dot', 'seconds', 'tick'], []]], [['=', ['dot', 'seconds', 'val'], '0'], ['call', ['dot', 'minutes', 'tick'], []]]]]]]]], ['ob', 'c', ['new', ['call', 'Clock']]]], [['call', ['dot', 'c', 'tick'], []], ['call', ['dot', 'c', 'tick'], []]]]
+Execution:
+Successful termination.
+Activation Stack = ['h0']
+heap = {
+  h0 : {'parentns': 'nil', 'initial': 0, 'Clock': 'h1', 'c': 'h2'}
+  h1 : {'type': 'class', 'body': ['struct', [['int', 'increment', '1'], ['class', 'Counter', ['struct', [['int', 'val', ['deref', 'initial']], ['proc', 'tick', [], [], [['=', 'val', ['+', ['deref', 'val'], ['deref', 'increment']]]]]]]], ['ob', 'minutes', ['new', ['call', 'Counter']]], ['ob', 'seconds', ['new', ['call', 'Counter']]], ['proc', 'tick', [], [], [['if', ['-', ['deref', ['dot', 'seconds', 'val']], '59'], [['call', ['dot', 'seconds', 'tick'], []]], [['=', ['dot', 'seconds', 'val'], '0'], ['call', ['dot', 'minutes', 'tick'], []]]]]]]], 'link': 'h0'}
+  h10 : {'parentns': 'h6'}
+  h11 : {'parentns': 'h2'}
+  h12 : {'parentns': 'h6'}
+  h2 : {'parentns': 'h0', 'increment': 1, 'Counter': 'h3', 'minutes': 'h4', 'seconds': 'h6', 'tick': 'h8'}
+  h3 : {'type': 'class', 'body': ['struct', [['int', 'val', ['deref', 'initial']], ['proc', 'tick', [], [], [['=', 'val', ['+', ['deref', 'val'], ['deref', 'increment']]]]]]], 'link': 'h2'}
+  h4 : {'parentns': 'h2', 'val': 0, 'tick': 'h5'}
+  h5 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], ['deref', 'increment']]]], 'link': 'h4'}  
+  h6 : {'parentns': 'h2', 'val': 2, 'tick': 'h7'}
+  h7 : {'type': 'proc', 'params': [], 'local': [], 'body': [['=', 'val', ['+', ['deref', 'val'], ['deref', 'increment']]]], 'link': 'h6'}  
+  h8 : {'type': 'proc', 'params': [], 'local': [], 'body': [['if', ['-', ['deref', ['dot', 'seconds', 'val']], '59'], [['call', ['dot', 'seconds', 'tick'], []]], [['=', ['dot', 'seconds', 'val'], '0'], ['call', ['dot', 'minutes', 'tick'], []]]]], 'link': 'h2'}
+  h9 : {'parentns': 'h2'}
+}
